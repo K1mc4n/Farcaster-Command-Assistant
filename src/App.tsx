@@ -1,13 +1,11 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
 
 function App() {
   useEffect(() => {
-    sdk.actions.ready(); // Siapkan Miniapp
+    sdk.actions.ready(); // Menyatakan miniapp siap
   }, []);
 
-  const { address } = useAccount();
   const [command, setCommand] = useState("");
   const [result, setResult] = useState("");
 
@@ -18,7 +16,7 @@ function App() {
 
     if (cmd === "/help") {
       setResult(
-        `Available commands:\n\n/help - Show available commands\n/price <symbol> - Get price of crypto\n\nExample: /price btc`
+        `📖 Available commands:\n\n/help - Show this help\n/price <symbol> - Get crypto price\n\nExample: /price btc`
       );
     } else if (cmd === "/price" && arg) {
       try {
@@ -27,39 +25,38 @@ function App() {
         );
         const data = await res.json();
         const price = data?.[arg]?.usd;
-
         if (price) {
           setResult(`${arg.toUpperCase()} price: $${price}`);
         } else {
-          setResult(`Token "${arg}" not found.`);
+          setResult(`❌ Token "${arg}" not found.`);
         }
-      } catch (e) {
-        setResult("Error fetching price.");
+      } catch {
+        setResult("⚠️ Error fetching price.");
       }
     } else {
-      setResult("Unknown command. Type /help");
+      setResult("❓ Unknown command. Type /help");
     }
 
     setCommand("");
   };
 
   return (
-    <div className="bg-black text-green-400 font-mono min-h-screen p-4">
-      <h1 className="text-xl mb-4">Farcaster Command Assistant</h1>
-      {address && <div className="mb-2">Connected: {address}</div>}
+    <div className="bg-black text-green-400 font-mono min-h-screen p-4 flex flex-col justify-start text-sm">
+      <h1 className="text-xl mb-4 text-green-300">Farcaster Command Assistant</h1>
 
-      <div className="flex items-center space-x-2">
-        <span>$</span>
+      <div className="flex items-center w-full gap-2">
+        <span className="text-green-500">$</span>
         <input
-          className="bg-black border-b border-green-400 text-green-400 w-full outline-none"
-          placeholder="Type command like /price btc"
+          className="flex-grow bg-black border-b border-green-400 text-green-300 outline-none placeholder-green-600"
+          placeholder="Type /price btc or /help"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCommand()}
+          autoFocus
         />
       </div>
 
-      <pre className="mt-4 whitespace-pre-wrap">{result}</pre>
+      <pre className="mt-4 whitespace-pre-wrap text-green-200">{result}</pre>
     </div>
   );
 }
