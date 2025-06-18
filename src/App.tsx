@@ -1,14 +1,10 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useEffect, useState } from "react";
-import { useAccount, useConnect } from "wagmi";
 
 function App() {
   useEffect(() => {
     sdk.actions.ready();
   }, []);
-
-  const { isConnected, address } = useAccount();
-  const { connect, connectors } = useConnect();
 
   const [command, setCommand] = useState("");
   const [result, setResult] = useState("");
@@ -23,16 +19,19 @@ function App() {
         `Available commands:\n\n/help - Show available commands\n/price <symbol> - Get price of crypto\n\nExample: /price btc`
       );
     } else if (cmd === "/price" && arg) {
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${arg}&vs_currencies=usd`
-      );
-      const data = await res.json();
-      const price = data?.[arg]?.usd;
-
-      if (price) {
-        setResult(`${arg.toUpperCase()} price: $${price}`);
-      } else {
-        setResult(`Token "${arg}" not found.`);
+      try {
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${arg}&vs_currencies=usd`
+        );
+        const data = await res.json();
+        const price = data?.[arg]?.usd;
+        if (price) {
+          setResult(`${arg.toUpperCase()} price: $${price}`);
+        } else {
+          setResult(`Token "${arg}" not found.`);
+        }
+      } catch (e) {
+        setResult("Failed to fetch price.");
       }
     } else {
       setResult("Unknown command. Type /help");
@@ -44,31 +43,17 @@ function App() {
   return (
     <div className="bg-black text-green-400 font-mono min-h-screen p-4">
       <h1 className="text-xl mb-4">Farcaster Command Assistant</h1>
-
-      {!isConnected ? (
-        <button
-          type="button"
-          onClick={() => connect({ connector: connectors[0] })}
-          className="bg-green-700 text-white px-4 py-2 rounded"
-        >
-          Connect Wallet
-        </button>
-      ) : (
-        <>
-          <div className="mb-2">Connected: {address}</div>
-          <div className="flex items-center space-x-2">
-            <span>$</span>
-            <input
-              className="bg-black border-b border-green-400 text-green-400 w-full outline-none"
-              placeholder="Type command like /price btc"
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCommand()}
-            />
-          </div>
-          <pre className="mt-4 whitespace-pre-wrap">{result}</pre>
-        </>
-      )}
+      <div className="flex items-center space-x-2">
+        <span>$</span>
+        <input
+          className="bg-black border-b border-green-400 text-green-400 w-full outline-none"
+          placeholder="Type command like /price btc"
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleCommand()}
+        />
+      </div>
+      <pre className="mt-4 whitespace-pre-wrap">{result}</pre>
     </div>
   );
 }
