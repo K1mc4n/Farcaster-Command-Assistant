@@ -1,17 +1,12 @@
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { http, createConfig } from "wagmi";
-import { base, mainnet } from "wagmi/chains";
-import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { base } from "wagmi/chains";
 
 export const config = createConfig({
-  chains: [base, mainnet],
-  connectors: [
-    farcasterFrame(), // digunakan jika dalam Farcaster Frame
-    new MetaMaskConnector({ chains: [base, mainnet] }), // fallback untuk web biasa
-  ],
+  chains: [base],
+  connectors: [farcasterFrame()],
   transports: {
     [base.id]: http(),
-    [mainnet.id]: http(),
   },
 });
 
